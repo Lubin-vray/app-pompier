@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil — Intervention Lab{% endblock %}
+
+{% block body %}
+    <section class="hero">
+        <span class="badge">Plateforme en développement</span>
+
+        <h1>
+            Entraînez-vous à gérer
+            <span>une intervention.</span>
+        </h1>
+
+        <p class="hero-description">
+            Analysez une situation, échangez avec une victime simulée
+            et décrivez vos actions. Retrouvez ensuite un bilan
+            de votre prise en charge.
+        </p>
+
+        <a href="#fonctionnement" class="button button-primary">
+            Découvrir le fonctionnement
+        </a>
+    </section>
+
+    <section id="fonctionnement" class="features-section">
+        <div class="section-heading">
+            <h2>Comment fonctionnera la plateforme ?</h2>
+
+            <p>
+                Un scénario, des décisions et un débriefing.
+            </p>
+        </div>
+
+        <div class="cards-grid">
+            <article class="feature-card">
+                <span class="step-number">01</span>
+
+                <h3>Choisir une situation</h3>
+
+                <p>
+                    Découvrez le contexte d’une intervention fictive :
+                    lieu, circonstances et informations initiales.
+                </p>
+            </article>
+
+            <article class="feature-card">
+                <span class="step-number">02</span>
+
+                <h3>Questionner et agir</h3>
+
+                <p>
+                    Posez vos questions et décrivez les vérifications
+                    ou les actions que vous réalisez.
+                </p>
+            </article>
+
+            <article class="feature-card">
+                <span class="step-number">03</span>
+
+                <h3>Comprendre le résultat</h3>
+
+                <p>
+                    Consultez les objectifs réalisés, les éléments
+                    oubliés et les explications associées.
+                </p>
+            </article>
+        </div>
+    </section>
+
+    <aside class="notice">
+        <h2>Un outil pédagogique</h2>
+
+        <p>
+            Les scénarios et les grilles d’évaluation devront être
+            validés par un formateur avant utilisation.
+            Cette plateforme ne remplacera pas une formation
+            ni les protocoles applicables.
+        </p>
+    </aside>
+{% endblock %}
