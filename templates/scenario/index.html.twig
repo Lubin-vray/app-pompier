@@ -1,0 +1,82 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Scénarios — Intervention Lab{% endblock %}
+
+{% block body %}
+    <section
+        id="scenario-app"
+        class="features-section"
+        data-url="{{ supabase_url }}"
+        data-key="{{ supabase_public_key }}"
+    >
+        <div class="section-heading">
+            <h1>Scénarios d’entraînement</h1>
+
+            <p>
+                Choisissez une situation pour commencer
+                une simulation.
+            </p>
+        </div>
+
+        <p
+            id="scenario-message"
+            role="status"
+            aria-live="polite"
+        ></p>
+
+        {% if error %}
+            <div class="notice" role="alert">
+                <h2>Chargement impossible</h2>
+
+                <p>{{ error }}</p>
+
+                <p>
+                    Vérifiez la configuration Supabase
+                    et le journal du serveur.
+                </p>
+            </div>
+        {% else %}
+            <div class="cards-grid">
+                {% for scenario in scenarios %}
+                    <article class="feature-card">
+                        <span class="badge">
+                            {{ scenario.difficulty }}
+                        </span>
+
+                        <h2>{{ scenario.title }}</h2>
+
+                        <p>{{ scenario.brief }}</p>
+
+                        <button
+                            type="button"
+                            class="button button-primary start-simulation"
+                            data-scenario-id="{{ scenario.id }}"
+                        >
+                            Commencer
+                        </button>
+                    </article>
+                {% else %}
+                    <div class="notice">
+                        <h2>Aucun scénario disponible</h2>
+
+                        <p>
+                            Aucun scénario publié pour le moment.
+                        </p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}
+
+{% block javascripts %}
+    <script
+        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"
+        defer
+    ></script>
+
+    <script
+        src="{{ asset('js/scenarios.js') }}"
+        defer
+    ></script>
+{% endblock %}

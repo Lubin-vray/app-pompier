@@ -15,20 +15,17 @@
     <body>
         <header class="site-header">
             <div class="container header-content">
-                <a href="{{ path('app_home') }}" class="brand">
-                    <span class="brand-icon">IL</span>
-
-                    <span>
-                        <span class="brand-name">Intervention Lab</span>
-                        <span class="brand-subtitle">
-                            Entraînement aux interventions
-                        </span>
-                    </span>
-                </a>
 
                 <nav aria-label="Navigation principale">
                     <a href="{{ path('app_home') }}" class="nav-link">
                         Accueil
+                    </a>
+
+                    <a href="{{ path('app_scenarios') }}" class="nav-link">
+                        Scénarios
+                    </a>
+                    <a href="{{ path('app_account') }}" class="nav-link">
+                        Mon compte
                     </a>
                 </nav>
             </div>

@@ -1,0 +1,106 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon compte — Intervention Lab{% endblock %}
+
+{% block body %}
+    <section
+        id="account-app"
+        class="account-section"
+        data-supabase-url="{{ supabase_url }}"
+        data-supabase-key="{{ supabase_public_key }}"
+    >
+        <h1>Mon compte</h1>
+
+        <p id="account-message" role="status" aria-live="polite"></p>
+
+        <div id="account-loading">
+            Chargement du compte…
+        </div>
+
+        <div id="account-auth" hidden>
+            <p>
+                Connectez-vous ou créez votre compte
+                pour les prochaines simulations.
+            </p>
+
+            <form id="account-form">
+                <label for="account-email">Adresse email</label>
+
+                <input
+                    id="account-email"
+                    type="email"
+                    autocomplete="email"
+                    maxlength="254"
+                    required
+                >
+
+                <label for="account-password">Mot de passe</label>
+
+                <input
+                    id="account-password"
+                    type="password"
+                    autocomplete="current-password"
+                    minlength="8"
+                    required
+                >
+
+                <p class="form-help">
+                    Pour l’inscription, utilisez au moins 8 caractères
+                    et un mot de passe unique.
+                </p>
+
+                <div class="account-actions">
+                    <button type="submit" class="button button-primary">
+                        Se connecter
+                    </button>
+
+                    <button
+                        id="account-register"
+                        type="button"
+                        class="button button-secondary"
+                    >
+                        Créer un compte
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="account-connected" hidden>
+            <h2>Vous êtes connecté</h2>
+
+            <p>
+                Adresse email :
+                <span id="account-user-email"></span>
+            </p>
+
+            <div class="account-actions">
+                <a
+                    href="{{ path('app_scenarios') }}"
+                    class="button button-primary"
+                >
+                    Voir les scénarios
+                </a>
+
+                <button
+                    id="account-logout"
+                    type="button"
+                    class="button button-secondary"
+                >
+                    Se déconnecter
+                </button>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block javascripts %}
+    <script
+        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"
+        defer
+    ></script>
+
+    <script
+        src="{{ asset('js/account.js') }}"
+        defer
+    ></script>
+{% endblock %}

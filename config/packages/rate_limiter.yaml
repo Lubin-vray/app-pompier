@@ -1,0 +1,6 @@
+framework:
+    rate_limiter:
+        simulation_messages:
+            policy: fixed_window
+            limit: 12
+            interval: '1 minute'

@@ -1,0 +1,109 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Simulation — Intervention Lab{% endblock %}
+
+{% block body %}
+    <section
+        id="simulation-app"
+        class="features-section"
+        data-session-id="{{ session_id }}"
+        data-url="{{ supabase_url }}"
+        data-key="{{ supabase_public_key }}"
+    >
+        <a
+            href="{{ path('app_scenarios') }}"
+            class="button button-secondary"
+        >
+            Retour aux scénarios
+        </a>
+
+        <div class="section-heading">
+            <h1 id="simulation-title">
+                Chargement de la simulation…
+            </h1>
+
+            <p>
+                Posez vos questions à la victime et décrivez
+                précisément les actions que vous réalisez.
+            </p>
+        </div>
+
+        <p
+            id="simulation-message"
+            role="status"
+            aria-live="polite"
+        ></p>
+
+        <div id="simulation-content" hidden>
+            <p id="simulation-status"></p>
+
+            <div
+                id="simulation-transcript"
+                role="log"
+                aria-label="Échanges de la simulation"
+                aria-live="polite"
+                aria-relevant="additions"
+            ></div>
+
+            <form
+                id="simulation-form"
+                class="simulation-form"
+            >
+                <label for="simulation-text">
+                    Votre question ou votre action
+                </label>
+
+                <textarea
+                    id="simulation-text"
+                    name="text"
+                    rows="3"
+                    maxlength="1500"
+                    placeholder="Exemple : Je recherche un saignement visible."
+                    aria-describedby="simulation-help"
+                    required
+                ></textarea>
+
+                <button
+                    id="simulation-send"
+                    type="submit"
+                    class="button button-primary"
+                >
+                    Envoyer
+                </button>
+            </form>
+
+            <p id="simulation-help" class="form-help">
+                Décrivez ce que vous faites réellement.
+                Vous pouvez poser une question ou décrire
+                plusieurs actions dans un même message.
+            </p>
+
+            <aside class="notice">
+                <h2>Simulation pédagogique</h2>
+
+                <p>
+                    Ce cas fictif n’est pas un protocole
+                    d’intervention validé. Les réponses sont
+                    définies par les règles du scénario.
+                </p>
+
+                <p>
+                    Ne saisissez aucune donnée personnelle
+                    concernant une vraie victime.
+                </p>
+            </aside>
+        </div>
+    </section>
+{% endblock %}
+
+{% block javascripts %}
+    <script
+        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"
+        defer
+    ></script>
+
+    <script
+        src="{{ asset('js/simulation.js') }}"
+        defer
+    ></script>
+{% endblock %}
