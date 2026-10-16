@@ -3,78 +3,164 @@
 {% block title %}Accueil — Intervention Lab{% endblock %}
 
 {% block body %}
-    <section class="hero">
-        <span class="badge">Plateforme en développement</span>
+    <section class="py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+                <span class="badge bg-warning text-dark fw-semibold text-uppercase px-3 py-2 mb-3">
+                    <i class="bi bi-fire me-1"></i>
+                    Plateforme en développement
+                </span>
 
-        <h1>
-            Entraînez-vous à gérer
-            <span>une intervention.</span>
-        </h1>
+                <h1 class="display-4 fw-bold mb-3">
+                    Entraînez-vous à gérer
+                    <span class="text-danger">une intervention.</span>
+                </h1>
 
-        <p class="hero-description">
-            Analysez une situation, échangez avec une victime simulée
-            et décrivez vos actions. Retrouvez ensuite un bilan
-            de votre prise en charge.
-        </p>
+                <p class="lead text-muted mb-4">
+                    Analysez une situation, échangez avec une victime simulée
+                    et décrivez vos actions. Retrouvez ensuite un bilan
+                    de votre prise en charge.
+                </p>
 
-        <a href="#fonctionnement" class="button button-primary">
-            Découvrir le fonctionnement
-        </a>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="#fonctionnement" class="btn btn-danger btn-lg px-4">
+                        <i class="bi bi-arrow-down-circle me-2"></i>
+                        Découvrir le fonctionnement
+                    </a>
+
+                    <a href="{{ path('app_scenarios') }}" class="btn btn-outline-primary btn-lg px-4">
+                        <i class="bi bi-list-task me-2"></i>
+                        Voir les scénarios
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <i class="bi bi-shield-plus fs-2 text-danger"></i>
+                            <h2 class="h5 fw-bold mb-0">
+                                Simulation pédagogique
+                            </h2>
+                        </div>
+
+                        <p class="text-muted mb-4">
+                            Intervention Lab vous permet de vous entraîner
+                            à réagir face à des situations fictives, sans risque
+                            et à votre rythme.
+                        </p>
+
+                        <ul class="list-unstyled mb-0">
+                            <li class="d-flex gap-2 mb-2">
+                                <i class="bi bi-check-circle-fill text-warning"></i>
+                                <span>Scénarios progressifs</span>
+                            </li>
+
+                            <li class="d-flex gap-2 mb-2">
+                                <i class="bi bi-check-circle-fill text-warning"></i>
+                                <span>Prise de décision guidée</span>
+                            </li>
+
+                            <li class="d-flex gap-2">
+                                <i class="bi bi-check-circle-fill text-warning"></i>
+                                <span>Bilan après chaque simulation</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
-    <section id="fonctionnement" class="features-section">
-        <div class="section-heading">
-            <h2>Comment fonctionnera la plateforme ?</h2>
+    <section id="fonctionnement" class="py-5">
+        <div class="text-center mb-5">
+            <span class="badge bg-danger text-uppercase fw-semibold px-3 py-2 mb-3">
+                Fonctionnement
+            </span>
 
-            <p>
+            <h2 class="display-6 fw-bold mb-3">
+                Comment fonctionnera la plateforme ?
+            </h2>
+
+            <p class="lead text-muted mb-0">
                 Un scénario, des décisions et un débriefing.
             </p>
         </div>
 
-        <div class="cards-grid">
-            <article class="feature-card">
-                <span class="step-number">01</span>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <article class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <span class="badge bg-danger fs-6 mb-3">01</span>
 
-                <h3>Choisir une situation</h3>
+                        <h3 class="h5 fw-bold mb-2">
+                            <i class="bi bi-geo-alt me-2 text-danger"></i>
+                            Choisir une situation
+                        </h3>
 
-                <p>
-                    Découvrez le contexte d’une intervention fictive :
-                    lieu, circonstances et informations initiales.
-                </p>
-            </article>
+                        <p class="text-muted mb-0">
+                            Découvrez le contexte d’une intervention fictive :
+                            lieu, circonstances et informations initiales.
+                        </p>
+                    </div>
+                </article>
+            </div>
 
-            <article class="feature-card">
-                <span class="step-number">02</span>
+            <div class="col-md-4">
+                <article class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <span class="badge bg-warning text-dark fs-6 mb-3">02</span>
 
-                <h3>Questionner et agir</h3>
+                        <h3 class="h5 fw-bold mb-2">
+                            <i class="bi bi-chat-square-text me-2 text-danger"></i>
+                            Questionner et agir
+                        </h3>
 
-                <p>
-                    Posez vos questions et décrivez les vérifications
-                    ou les actions que vous réalisez.
-                </p>
-            </article>
+                        <p class="text-muted mb-0">
+                            Posez vos questions et décrivez les vérifications
+                            ou les actions que vous réalisez.
+                        </p>
+                    </div>
+                </article>
+            </div>
 
-            <article class="feature-card">
-                <span class="step-number">03</span>
+            <div class="col-md-4">
+                <article class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <span class="badge bg-primary fs-6 mb-3">03</span>
 
-                <h3>Comprendre le résultat</h3>
+                        <h3 class="h5 fw-bold mb-2">
+                            <i class="bi bi-clipboard-check me-2 text-danger"></i>
+                            Comprendre le résultat
+                        </h3>
 
-                <p>
-                    Consultez les objectifs réalisés, les éléments
-                    oubliés et les explications associées.
-                </p>
-            </article>
+                        <p class="text-muted mb-0">
+                            Consultez les objectifs réalisés, les éléments
+                            oubliés et les explications associées.
+                        </p>
+                    </div>
+                </article>
+            </div>
         </div>
     </section>
 
-    <aside class="notice">
-        <h2>Un outil pédagogique</h2>
+    <aside class="alert alert-warning border-0 shadow-sm mt-4">
+        <div class="d-flex gap-3">
+            <i class="bi bi-info-circle-fill fs-4"></i>
 
-        <p>
-            Les scénarios et les grilles d’évaluation devront être
-            validés par un formateur avant utilisation.
-            Cette plateforme ne remplacera pas une formation
-            ni les protocoles applicables.
-        </p>
+            <div>
+                <h2 class="h5 alert-heading fw-bold mb-1">
+                    Un outil pédagogique
+                </h2>
+
+                <p class="mb-0">
+                    Les scénarios et les grilles d’évaluation devront être
+                    validés par un formateur avant utilisation.
+                    Cette plateforme ne remplacera pas une formation
+                    ni les protocoles applicables.
+                </p>
+            </div>
+        </div>
     </aside>
 {% endblock %}

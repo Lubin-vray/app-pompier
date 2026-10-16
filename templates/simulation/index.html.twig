@@ -5,93 +5,286 @@
 {% block body %}
     <section
         id="simulation-app"
-        class="features-section"
         data-session-id="{{ session_id }}"
         data-url="{{ supabase_url }}"
         data-key="{{ supabase_public_key }}"
+        data-account-url="{{ path('app_account') }}"
     >
-        <a
-            href="{{ path('app_scenarios') }}"
-            class="button button-secondary"
-        >
-            Retour aux scénarios
-        </a>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+            <a
+                href="{{ path('app_scenarios') }}"
+                class="btn btn-outline-primary"
+            >
+                <i class="bi bi-arrow-left me-1"></i>
+                Retour aux scénarios
+            </a>
 
-        <div class="section-heading">
-            <h1 id="simulation-title">
-                Chargement de la simulation…
-            </h1>
-
-            <p>
-                Posez vos questions à la victime et décrivez
-                précisément les actions que vous réalisez.
-            </p>
+            <span class="badge bg-danger text-uppercase fw-semibold px-3 py-2">
+                <i class="bi bi-broadcast me-1"></i>
+                Simulation
+            </span>
         </div>
 
-        <p
-            id="simulation-message"
-            role="status"
-            aria-live="polite"
-        ></p>
+        <div class="row g-4">
+            <div class="col-12 col-lg-8">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h1
+                            id="simulation-title"
+                            class="h3 fw-bold mb-2"
+                        >
+                            Chargement de la simulation…
+                        </h1>
 
-        <div id="simulation-content" hidden>
-            <p id="simulation-status"></p>
+                        <div
+                            id="simulation-brief"
+                            class="card bg-light border-0 mt-3"
+                        >
+                            <div class="card-body">
+                                <h2 class="h6 fw-semibold mb-2">
+                                    <i class="bi bi-info-circle me-2 text-primary"></i>
+                                    Mise en situation
+                                </h2>
 
-            <div
-                id="simulation-transcript"
-                role="log"
-                aria-label="Échanges de la simulation"
-                aria-live="polite"
-                aria-relevant="additions"
-            ></div>
+                                <p
+                                    id="simulation-brief-text"
+                                    class="mb-0 text-muted"
+                                ></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <form
-                id="simulation-form"
-                class="simulation-form"
-            >
-                <label for="simulation-text">
-                    Votre question ou votre action
-                </label>
-
-                <textarea
-                    id="simulation-text"
-                    name="text"
-                    rows="3"
-                    maxlength="1500"
-                    placeholder="Exemple : Je recherche un saignement visible."
-                    aria-describedby="simulation-help"
-                    required
-                ></textarea>
-
-                <button
-                    id="simulation-send"
-                    type="submit"
-                    class="button button-primary"
+                <div
+                    id="simulation-scene"
+                    class="card border-0 shadow-sm mb-4 d-none"
                 >
-                    Envoyer
-                </button>
-            </form>
+                    <div class="card-body p-3">
+                        <img
+                            id="simulation-scene-image"
+                            src=""
+                            alt="Scène de l’accident"
+                            class="img-fluid rounded w-100"
+                            style="max-height: 420px; object-fit: cover;"
+                        >
+                    </div>
+                </div>
 
-            <p id="simulation-help" class="form-help">
-                Décrivez ce que vous faites réellement.
-                Vous pouvez poser une question ou décrire
-                plusieurs actions dans un même message.
-            </p>
+                <div
+                    id="simulation-message"
+                    class="alert alert-info d-none"
+                    role="status"
+                    aria-live="polite"
+                ></div>
 
-            <aside class="notice">
-                <h2>Simulation pédagogique</h2>
+                <div id="simulation-content" hidden>
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white fw-semibold">
+                            <i class="bi bi-chat-dots me-2"></i>
+                            Échanges de la simulation
+                        </div>
 
-                <p>
-                    Ce cas fictif n’est pas un protocole
-                    d’intervention validé. Les réponses sont
-                    définies par les règles du scénario.
-                </p>
+                        <div class="card-body">
+                            <p
+                                id="simulation-status"
+                                class="text-muted mb-3"
+                            ></p>
 
-                <p>
-                    Ne saisissez aucune donnée personnelle
-                    concernant une vraie victime.
-                </p>
-            </aside>
+                            <div
+                                id="simulation-transcript"
+                                class="simulation-transcript"
+                                role="log"
+                                aria-label="Échanges de la simulation"
+                                aria-live="polite"
+                                aria-relevant="additions"
+                            ></div>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <div
+                                class="btn-group w-100 mb-3"
+                                role="group"
+                                aria-label="Type d’intervention"
+                            >
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-primary active"
+                                    data-mode="question"
+                                >
+                                    <i class="bi bi-chat-square-text me-1"></i>
+                                    Poser une question
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-danger"
+                                    data-mode="action"
+                                >
+                                    <i class="bi bi-hand-index-thumb me-1"></i>
+                                    Réaliser un geste
+                                </button>
+                            </div>
+
+                            <p class="form-text">
+                                Mode sélectionné :
+                                <span
+                                    id="simulation-mode-label"
+                                    class="fw-semibold text-primary"
+                                >
+                                    Poser une question
+                                </span>
+                            </p>
+
+                            <form id="simulation-form">
+                                <label
+                                    for="simulation-text"
+                                    class="form-label fw-semibold"
+                                >
+                                    Votre question ou votre action
+                                </label>
+
+                                <textarea
+                                    id="simulation-text"
+                                    name="text"
+                                    class="form-control mb-3"
+                                    rows="3"
+                                    maxlength="1500"
+                                    placeholder="Exemple : Bonjour, que s’est-il passé ?"
+                                    aria-describedby="simulation-help"
+                                    required
+                                ></textarea>
+
+                                <div class="d-flex justify-content-end">
+                                    <button
+                                        id="simulation-send"
+                                        type="submit"
+                                        class="btn btn-danger px-4"
+                                    >
+                                        <i class="bi bi-send me-1"></i>
+                                        Envoyer
+                                    </button>
+                                </div>
+
+                                <p
+                                    id="simulation-help"
+                                    class="form-text mt-3 mb-0"
+                                >
+                                    En mode « Poser une question », l’IA répond
+                                    comme la victime. En mode « Réaliser un geste »,
+                                    l’IA analyse l’action et applique les règles
+                                    du scénario.
+                                </p>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    id="simulation-score"
+                    class="card border-0 shadow-sm mb-4 d-none"
+                >
+                    <div class="card-body">
+                        <h2 class="h5 fw-bold mb-3">
+                            <i class="bi bi-award me-2 text-warning"></i>
+                            Bilan et score
+                        </h2>
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-semibold">Score total</span>
+
+                            <span
+                                id="simulation-score-total"
+                                class="fw-bold fs-4 text-danger"
+                            >
+                                0 / 100
+                            </span>
+                        </div>
+
+                        <div class="progress mb-3" style="height: 1rem;">
+                            <div
+                                id="simulation-score-bar"
+                                class="progress-bar bg-danger"
+                                role="progressbar"
+                                style="width: 0%;"
+                                aria-valuemin="0"
+                                aria-valuemax="100"
+                                aria-valuenow="0"
+                            ></div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="border rounded p-3">
+                                    <div class="fw-semibold mb-1">
+                                        Bilan primaire XABCDE
+                                    </div>
+
+                                    <div
+                                        id="simulation-score-primary"
+                                        class="text-muted"
+                                    >
+                                        0 / 50 points
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="border rounded p-3">
+                                    <div class="fw-semibold mb-1">
+                                        Prise en charge de l’hémorragie
+                                    </div>
+
+                                    <div
+                                        id="simulation-score-hemorrhage"
+                                        class="text-muted"
+                                    >
+                                        0 / 50 points
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    id="simulation-missing"
+                    class="card border-0 shadow-sm mb-4 d-none"
+                >
+                    <div class="card-body">
+                        <h2 class="h5 fw-bold mb-3">
+                            <i class="bi bi-clipboard-x me-2 text-danger"></i>
+                            Éléments non réalisés
+                        </h2>
+
+                        <ul
+                            id="simulation-missing-list"
+                            class="list-unstyled mb-0"
+                        ></ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <aside class="alert alert-warning border-0 shadow-sm">
+                    <h2 class="h5 alert-heading fw-bold">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        Simulation pédagogique
+                    </h2>
+
+                    <p class="mb-2">
+                        Ce cas fictif n’est pas un protocole
+                        d’intervention validé. Les réponses sont
+                        définies par les règles du scénario.
+                    </p>
+
+                    <p class="mb-0">
+                        Ne saisissez aucune donnée personnelle
+                        concernant une vraie victime.
+                    </p>
+                </aside>
+            </div>
         </div>
     </section>
 {% endblock %}

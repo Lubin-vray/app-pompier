@@ -3,65 +3,220 @@
 {% block title %}Scénarios — Intervention Lab{% endblock %}
 
 {% block body %}
+    {# Mettre à false une fois le problème des images résolu. #}
+    {% set debugImages = false %}
+
     <section
         id="scenario-app"
-        class="features-section"
         data-url="{{ supabase_url }}"
         data-key="{{ supabase_public_key }}"
+        data-account-url="{{ path('app_account') }}"
     >
-        <div class="section-heading">
-            <h1>Scénarios d’entraînement</h1>
+        <div
+            id="scenario-message"
+            class="alert alert-info d-none"
+            role="status"
+            aria-live="polite"
+        ></div>
 
-            <p>
-                Choisissez une situation pour commencer
-                une simulation.
+        <div class="text-center mb-5">
+            <span
+                class="badge bg-danger text-uppercase fw-semibold px-3 py-2 mb-3"
+            >
+                <i class="bi bi-fire me-1"></i>
+                Entraînement
+            </span>
+
+            <h1 class="display-6 fw-bold mb-3">
+                Scénarios d’entraînement
+            </h1>
+
+            <p class="lead text-muted mb-0">
+                Les situations disponibles sur la plateforme.
             </p>
         </div>
 
-        <p
-            id="scenario-message"
-            role="status"
-            aria-live="polite"
-        ></p>
-
         {% if error %}
-            <div class="notice" role="alert">
-                <h2>Chargement impossible</h2>
+            <div
+                class="alert alert-danger border-0 shadow-sm"
+                role="alert"
+            >
+                <h2 class="h4 alert-heading">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Chargement impossible
+                </h2>
 
-                <p>{{ error }}</p>
+                <p class="mb-2">{{ error }}</p>
 
-                <p>
+                <hr>
+
+                <p class="mb-0 small">
                     Vérifiez la configuration Supabase
                     et le journal du serveur.
                 </p>
             </div>
         {% else %}
-            <div class="cards-grid">
+            <div class="row g-4">
                 {% for scenario in scenarios %}
-                    <article class="feature-card">
-                        <span class="badge">
-                            {{ scenario.difficulty }}
-                        </span>
+                    {# Données reçues pour ce scénario. #}
+                    {% set definition = scenario.definition|default({}) %}
 
-                        <h2>{{ scenario.title }}</h2>
+                    {# Première source possible de l’image. #}
+                    {% set sceneImage =
+                        definition.images.scene|default('')
+                    %}
 
-                        <p>{{ scenario.brief }}</p>
+                    {# Deuxième source si la première est vide. #}
+                    {% if sceneImage is empty %}
+                        {% set sceneImage =
+                            definition.initial_state.scene_image|default('')
+                        %}
+                    {% endif %}
 
-                        <button
-                            type="button"
-                            class="button button-primary start-simulation"
-                            data-scenario-id="{{ scenario.id }}"
-                        >
-                            Commencer
-                        </button>
-                    </article>
+                    {# Ne pas utiliser un tableau ou un objet comme URL. #}
+                    {% set imageHasInvalidType = sceneImage is iterable %}
+
+                    {% if imageHasInvalidType %}
+                        {% set sceneImage = '' %}
+                    {% else %}
+                        {% set sceneImage = sceneImage|trim %}
+                    {% endif %}
+
+                    {% set scenarioTitle =
+                        scenario.title|default('Scénario sans titre')
+                    %}
+
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <article class="card h-100 border-0 shadow-sm">
+                            <div
+                                class="scenario-image-container position-relative"
+                                style="height: 200px; overflow: hidden;"
+                            >
+                                {% if sceneImage is not empty %}
+                                    <img
+                                        src="{{ sceneImage }}"
+                                        alt="Illustration du scénario : {{ scenarioTitle }}"
+                                        class="card-img-top scenario-image"
+                                        style="width: 100%; height: 200px; object-fit: cover;"
+                                        loading="lazy"
+                                        decoding="async"
+                                    >
+                                {% endif %}
+
+                                <div
+                                    class="scenario-image-placeholder bg-light text-center p-3
+                                        {{ sceneImage is not empty ? 'd-none' : 'd-flex' }}
+                                        flex-column align-items-center justify-content-center"
+                                    style="width: 100%; height: 200px;"
+                                >
+                                    <i class="bi bi-image fs-1 text-danger"></i>
+
+                                    <span class="small text-muted mt-2">
+                                        {% if sceneImage is not empty %}
+                                            Image impossible à charger
+                                        {% else %}
+                                            Aucune image disponible
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="card-body d-flex flex-column p-4">
+                                <div
+                                    class="d-flex justify-content-between align-items-start mb-3"
+                                >
+                                    <span class="badge bg-warning text-dark fw-semibold">
+                                        {{ scenario.difficulty|default('Non précisée') }}
+                                    </span>
+
+                                    <i
+                                        class="bi bi-clipboard2-pulse fs-4 text-danger"
+                                    ></i>
+                                </div>
+
+                                <h2 class="h5 fw-bold mb-2">
+                                    {{ scenarioTitle }}
+                                </h2>
+
+                                <p class="text-muted">
+                                    {{ scenario.brief|default('Aucune description disponible.') }}
+                                </p>
+
+                                {% if debugImages %}
+                                    <div class="alert alert-secondary small text-break">
+                                        <div class="fw-semibold mb-2">
+                                            Diagnostic de l’image
+                                        </div>
+
+                                        <div class="mb-2">
+                                            État :
+                                            <span class="scenario-image-status">
+                                                {% if imageHasInvalidType %}
+                                                    Le champ image contient un tableau
+                                                    ou un objet, pas une URL.
+                                                {% elseif sceneImage is empty %}
+                                                    Aucun chemin trouvé dans les
+                                                    deux champs attendus.
+                                                {% else %}
+                                                    URL présente ; chargement à vérifier.
+                                                {% endif %}
+                                            </span>
+                                        </div>
+
+                                        <div class="mb-2">
+                                            Valeur utilisée :
+                                            <code>
+                                                {{ sceneImage|default('AUCUNE IMAGE') }}
+                                            </code>
+                                        </div>
+
+                                        {% if sceneImage is not empty %}
+                                            <a
+                                                href="{{ sceneImage }}"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="d-inline-block mb-2"
+                                            >
+                                                Ouvrir l’image directement
+                                            </a>
+                                        {% endif %}
+
+                                        <details>
+                                            <summary>
+                                                Voir la définition reçue
+                                            </summary>
+
+                                            <pre
+                                                class="mt-2 mb-0"
+                                                style="white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.75rem;"
+                                            >{{ definition|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+                                        </details>
+                                    </div>
+                                {% endif %}
+
+                                <button
+                                    type="button"
+                                    class="btn btn-danger w-100 mt-auto start-simulation"
+                                    data-scenario-id="{{ scenario.id }}"
+                                >
+                                    <i class="bi bi-play-fill me-1"></i>
+                                    Commencer
+                                </button>
+                            </div>
+                        </article>
+                    </div>
                 {% else %}
-                    <div class="notice">
-                        <h2>Aucun scénario disponible</h2>
+                    <div class="col-12">
+                        <div class="alert alert-warning border-0 shadow-sm">
+                            <h2 class="h4 alert-heading">
+                                <i class="bi bi-inbox me-2"></i>
+                                Aucun scénario publié
+                            </h2>
 
-                        <p>
-                            Aucun scénario publié pour le moment.
-                        </p>
+                            <p class="mb-0">
+                                Aucun scénario n’est disponible pour le moment.
+                            </p>
+                        </div>
                     </div>
                 {% endfor %}
             </div>
@@ -70,6 +225,8 @@
 {% endblock %}
 
 {% block javascripts %}
+    {{ parent() }}
+
     <script
         src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"
         defer
@@ -79,4 +236,72 @@
         src="{{ asset('js/scenarios.js') }}"
         defer
     ></script>
+
+    <script>
+        (() => {
+            function initializeScenarioImages() {
+                document.querySelectorAll('.scenario-image').forEach((image) => {
+                    const card = image.closest('article');
+                    const container = image.closest('.scenario-image-container');
+                    const placeholder = container?.querySelector(
+                        '.scenario-image-placeholder'
+                    );
+                    const status = card?.querySelector('.scenario-image-status');
+
+                    function showImageError() {
+                        image.classList.add('d-none');
+
+                        if (placeholder) {
+                            placeholder.classList.remove('d-none');
+                            placeholder.classList.add('d-flex');
+                        }
+
+                        if (status) {
+                            status.textContent =
+                                'Échec du chargement : ouvre le lien pour voir la réponse.';
+                        }
+
+                        console.warn(
+                            'Image de scénario non chargée :',
+                            image.currentSrc || image.src
+                        );
+                    }
+
+                    function showImageSuccess() {
+                        image.classList.remove('d-none');
+
+                        if (placeholder) {
+                            placeholder.classList.add('d-none');
+                            placeholder.classList.remove('d-flex');
+                        }
+
+                        if (status) {
+                            status.textContent = 'Image chargée correctement.';
+                        }
+                    }
+
+                    image.addEventListener('error', showImageError);
+                    image.addEventListener('load', showImageSuccess);
+
+                    if (image.complete) {
+                        if (image.naturalWidth > 0) {
+                            showImageSuccess();
+                        } else {
+                            showImageError();
+                        }
+                    }
+                });
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener(
+                    'DOMContentLoaded',
+                    initializeScenarioImages,
+                    { once: true }
+                );
+            } else {
+                initializeScenarioImages();
+            }
+        })();
+    </script>
 {% endblock %}

@@ -1,25 +1,88 @@
-
 services:
-###> doctrine/doctrine-bundle ###
-  database:
-    image: postgres:${POSTGRES_VERSION:-16}-alpine
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-app}
-      # You should definitely change the password in production
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
-      POSTGRES_USER: ${POSTGRES_USER:-app}
-    healthcheck:
-      test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB:-app}", "-U", "${POSTGRES_USER:-app}"]
-      timeout: 5s
-      retries: 5
-      start_period: 60s
-    volumes:
-      - database_data:/var/lib/postgresql/data:rw
-      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
-      # - ./docker/db/data:/var/lib/postgresql/data:rw
-###< doctrine/doctrine-bundle ###
+    # Serveur de l'IA.
+    ollama:
+        image: ollama/ollama:latest
+
+        restart: unless-stopped
+
+        environment:
+            OLLAMA_HOST: 0.0.0.0:11434
+
+        volumes:
+            - ollama_data:/root/.ollama
+
+    # Téléchargement automatique du modèle.
+    # Ce conteneur s'arrête après une initialisation réussie.
+    ollama-init:
+        image: ollama/ollama:latest
+
+        restart: "no"
+
+        depends_on:
+            ollama:
+                condition: service_started
+
+        environment:
+            OLLAMA_HOST: http://ollama:11434
+            OLLAMA_MODEL: llama3.2:3b
+
+        entrypoint:
+            - /bin/sh
+            - -c
+
+        command:
+            - |
+              set -eu
+
+              echo "Attente du serveur Ollama..."
+
+              attempt=0
+
+              until ollama list >/dev/null 2>&1; do
+                  attempt=$$((attempt + 1))
+
+                  if [ "$$attempt" -ge 60 ]; then
+                      echo "Erreur : Ollama ne répond pas."
+                      exit 1
+                  fi
+
+                  sleep 2
+              done
+
+              echo "Téléchargement du modèle : $$OLLAMA_MODEL"
+
+              ollama pull "$$OLLAMA_MODEL"
+
+              echo "Le modèle est prêt."
+
+    # Site Symfony.
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+
+        restart: unless-stopped
+
+        ports:
+            - "8080:80"
+
+        env_file:
+            - .env.local
+
+        environment:
+            APP_ENV: prod
+            APP_DEBUG: "0"
+
+            OLLAMA_URL: http://ollama:11434
+            OLLAMA_MODEL: llama3.2:3b
+
+        depends_on:
+            ollama-init:
+                condition: service_completed_successfully
+
+        volumes:
+            - symfony_var:/app/var
 
 volumes:
-###> doctrine/doctrine-bundle ###
-  database_data:
-###< doctrine/doctrine-bundle ###
+    ollama_data:
+    symfony_var:

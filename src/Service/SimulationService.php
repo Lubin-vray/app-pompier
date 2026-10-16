@@ -104,6 +104,8 @@ final class SimulationService
                         'at' => gmdate('c'),
                     ],
                 ],
+
+                'status' => 'active',
             ]
         );
 
@@ -142,23 +144,91 @@ final class SimulationService
 
     public function getVisibleData(array $session): array
     {
+        $transcript = $session['transcript'] ?? [];
+
+        $learnerMessages = array_values(array_filter(
+            $transcript,
+            static fn (array $message): bool =>
+                ($message['role'] ?? '') === 'learner'
+        ));
+
+        $simulatorMessages = array_values(array_filter(
+            $transcript,
+            static fn (array $message): bool =>
+                ($message['role'] ?? '') === 'simulator'
+        ));
+
+        $brief = $session['snapshot']['brief'] ?? '';
+
+        $lastLearner = $learnerMessages === []
+            ? null
+            : end($learnerMessages);
+
+        $lastSimulator = null;
+
+        if ($simulatorMessages !== []) {
+            $candidate = end($simulatorMessages);
+
+            $isInitialBrief =
+                count($simulatorMessages) === 1
+                && trim($candidate['content'] ?? '') === trim($brief);
+
+            if (!$isInitialBrief) {
+                $lastSimulator = $candidate;
+            }
+        }
+
         return [
             'id' => $session['id'],
             'title' => $session['snapshot']['title'],
             'brief' => $session['snapshot']['brief'],
             'status' => $session['status'],
             'revision' => $session['revision'],
+            'score' => $this->calculateScore($session),
+            'missing_actions' => $this->getMissingActions($session),
+            'image' => $this->getCurrentImage($session),
+            'hemorrhage_revealed' => $this->isHemorrhageRevealed($session),
 
-            // Les faits cachés, les règles et les événements internes
-            // ne sont pas transmis au navigateur.
-            'transcript' => array_map(
-                static fn (array $message): array => [
-                    'role' => $message['role'],
-                    'content' => $message['content'],
-                ],
-                $session['transcript']
-            ),
+            'last_exchange' => [
+                'learner' => $lastLearner === false
+                    ? null
+                    : [
+                        'role' => $lastLearner['role'],
+                        'content' => $lastLearner['content'],
+                    ],
+                'simulator' => $lastSimulator === false
+                    ? null
+                    : [
+                        'role' => $lastSimulator['role'],
+                        'content' => $lastSimulator['content'],
+                    ],
+            ],
         ];
+    }
+
+    public function getCurrentImage(array $session): string
+    {
+        $definition = $session['snapshot']['definition'] ?? [];
+        $images = $definition['images'] ?? [];
+
+        $done = $session['state']['done'] ?? [];
+
+        $hemorrhageDiscovered = in_array('check_x', $done, true)
+            || in_array('identify_hemorrhage', $done, true);
+
+        if ($hemorrhageDiscovered && !empty($images['hemorrhage'])) {
+            return $images['hemorrhage'];
+        }
+
+        return $images['scene'] ?? '';
+    }
+
+    public function isHemorrhageRevealed(array $session): bool
+    {
+        $done = $session['state']['done'] ?? [];
+
+        return in_array('check_x', $done, true)
+            || in_array('identify_hemorrhage', $done, true);
     }
 
     public function sendMessage(
@@ -176,13 +246,18 @@ final class SimulationService
         $definition = $session['snapshot']['definition'];
 
         $done = $session['state']['done'] ?? [];
+
         $replies = [];
         $events = [];
 
+        $victimReply = trim($analysis['victim_reply'] ?? '');
+
         if ($analysis['needs_clarification']) {
-            $replies[] =
-                'Simulateur : précisez votre question ou ce que vous faites ' .
-                'réellement. Aucune action n’est validée pour ce message.';
+            if ($victimReply === '') {
+                $replies[] =
+                    'Simulateur : précisez ce que vous vérifiez ' .
+                    'ou réalisez. Aucune action n’est validée.';
+            }
         } else {
             foreach (array_unique($analysis['intents']) as $intentId) {
                 $objective = null;
@@ -195,30 +270,7 @@ final class SimulationService
                 }
 
                 if ($objective !== null) {
-                    $missingPrerequisites = array_diff(
-                        $objective['prerequisites'] ?? [],
-                        $done
-                    );
-
-                    if ($missingPrerequisites !== []) {
-                        $replies[] =
-                            'Simulateur : cette action ne peut pas être ' .
-                            'comptabilisée à ce stade. Les vérifications ' .
-                            'préalables prévues par ce cas ne sont pas réalisées.';
-
-                        $events[] = [
-                            'id' => $intentId,
-                            'outcome' => 'blocked',
-                        ];
-
-                        continue;
-                    }
-
-                    $alreadyDone = in_array(
-                        $intentId,
-                        $done,
-                        true
-                    );
+                    $alreadyDone = in_array($intentId, $done, true);
 
                     if (!$alreadyDone) {
                         $done[] = $intentId;
@@ -228,27 +280,32 @@ final class SimulationService
 
                     $events[] = [
                         'id' => $intentId,
-                        'outcome' => $alreadyDone
-                            ? 'repeated'
-                            : 'done',
+                        'outcome' => $alreadyDone ? 'repeated' : 'done',
                     ];
 
                     continue;
                 }
 
-                foreach ($definition['questions'] ?? [] as $question) {
-                    if ($question['id'] === $intentId) {
-                        $replies[] = $question['response'];
-                        break;
+                if ($victimReply === '') {
+                    foreach ($definition['questions'] ?? [] as $question) {
+                        if ($question['id'] === $intentId) {
+                            $replies[] =
+                                'Victime : ' . $question['response'];
+                            break;
+                        }
                     }
                 }
             }
         }
 
+        if ($victimReply !== '') {
+            $replies[] = 'Victime : ' . $victimReply;
+        }
+
         if ($replies === []) {
             $replies[] =
-                'Simulateur : cette question ou action n’est pas prévue ' .
-                'dans ce cas de démonstration. Elle n’a pas été comptabilisée.';
+                'Simulateur : décrivez plus précisément votre ' .
+                'question ou votre action. Aucun critère n’est validé.';
         }
 
         $transcript = $session['transcript'];
@@ -271,6 +328,12 @@ final class SimulationService
         $state['done'] = $done;
         $state['facts'] = (object) ($state['facts'] ?? []);
 
+        $status = $session['status'];
+
+        if ($this->isSimulationCompleted($definition, $done)) {
+            $status = 'completed';
+        }
+
         $updatedSessions = $this->request(
             'PATCH',
             'simulation_sessions',
@@ -283,6 +346,7 @@ final class SimulationService
                 'state' => $state,
                 'transcript' => $transcript,
                 'revision' => $session['revision'] + 1,
+                'status' => $status,
                 'updated_at' => $now,
             ]
         );
@@ -290,11 +354,84 @@ final class SimulationService
         if (empty($updatedSessions[0])) {
             throw new HttpException(
                 409,
-                'La simulation a changé. Rechargez la page avant de réessayer.'
+                'La simulation a changé. ' .
+                'Rechargez la page avant de réessayer.'
             );
         }
 
         return $updatedSessions[0];
+    }
+
+    public function calculateScore(array $session): array
+    {
+        $definition = $session['snapshot']['definition'] ?? [];
+        $scoring = $definition['scoring'] ?? [];
+
+        $done = $session['state']['done'] ?? [];
+
+        $primaryPoints = 0.0;
+        $hemorrhagePoints = 0.0;
+
+        foreach ($scoring['primary_assessment'] ?? [] as $actionId => $points) {
+            if (in_array($actionId, $done, true)) {
+                $primaryPoints += (float) $points;
+            }
+        }
+
+        foreach ($scoring['hemorrhage_management'] ?? [] as $actionId => $points) {
+            if (in_array($actionId, $done, true)) {
+                $hemorrhagePoints += (float) $points;
+            }
+        }
+
+        $total = $primaryPoints + $hemorrhagePoints;
+
+        return [
+            'total' => round($total, 1),
+            'max' => 100,
+            'primary_assessment' => [
+                'earned' => round($primaryPoints, 1),
+                'max' => 50,
+            ],
+            'hemorrhage_management' => [
+                'earned' => round($hemorrhagePoints, 1),
+                'max' => 50,
+            ],
+            'completed_actions' => $done,
+        ];
+    }
+
+    public function getMissingActions(array $session): array
+    {
+        $definition = $session['snapshot']['definition'] ?? [];
+        $done = $session['state']['done'] ?? [];
+
+        $missing = [];
+
+        foreach ($definition['objectives'] ?? [] as $objective) {
+            $actionId = $objective['id'];
+
+            if (!in_array($actionId, $done, true)) {
+                $missing[] = [
+                    'id' => $actionId,
+                    'label' => $objective['label']
+                        ?? $objective['description']
+                        ?? $actionId,
+                ];
+            }
+        }
+
+        return $missing;
+    }
+
+    private function isSimulationCompleted(
+        array $definition,
+        array $done,
+    ): bool {
+        $endAction = $definition['end_condition']['action'] ?? null;
+
+        return $endAction !== null
+            && in_array($endAction, $done, true);
     }
 
     private function request(
@@ -330,11 +467,11 @@ final class SimulationService
             $options
         );
 
-        $status = $response->getStatusCode();
+        $statusCode = $response->getStatusCode();
 
-        if ($status < 200 || $status >= 300) {
+        if ($statusCode < 200 || $statusCode >= 300) {
             throw new \RuntimeException(
-                'Supabase HTTP ' . $status . ' : ' .
+                'Supabase HTTP ' . $statusCode . ' : ' .
                 $response->getContent(false)
             );
         }

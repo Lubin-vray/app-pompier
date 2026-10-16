@@ -5,89 +5,184 @@
 {% block body %}
     <section
         id="account-app"
-        class="account-section"
         data-supabase-url="{{ supabase_url }}"
         data-supabase-key="{{ supabase_public_key }}"
     >
-        <h1>Mon compte</h1>
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-8 col-xl-7">
+                <div class="text-center mb-4">
+                    <span class="badge bg-danger text-uppercase fw-semibold px-3 py-2 mb-3">
+                        <i class="bi bi-person-badge me-1"></i>
+                        Espace utilisateur
+                    </span>
 
-        <p id="account-message" role="status" aria-live="polite"></p>
+                    <h1 class="display-6 fw-bold mb-2">
+                        Mon compte
+                    </h1>
 
-        <div id="account-loading">
-            Chargement du compte…
-        </div>
-
-        <div id="account-auth" hidden>
-            <p>
-                Connectez-vous ou créez votre compte
-                pour les prochaines simulations.
-            </p>
-
-            <form id="account-form">
-                <label for="account-email">Adresse email</label>
-
-                <input
-                    id="account-email"
-                    type="email"
-                    autocomplete="email"
-                    maxlength="254"
-                    required
-                >
-
-                <label for="account-password">Mot de passe</label>
-
-                <input
-                    id="account-password"
-                    type="password"
-                    autocomplete="current-password"
-                    minlength="8"
-                    required
-                >
-
-                <p class="form-help">
-                    Pour l’inscription, utilisez au moins 8 caractères
-                    et un mot de passe unique.
-                </p>
-
-                <div class="account-actions">
-                    <button type="submit" class="button button-primary">
-                        Se connecter
-                    </button>
-
-                    <button
-                        id="account-register"
-                        type="button"
-                        class="button button-secondary"
-                    >
-                        Créer un compte
-                    </button>
+                    <p class="lead text-muted mb-0">
+                        Connectez-vous pour suivre vos simulations
+                        et accéder aux scénarios.
+                    </p>
                 </div>
-            </form>
-        </div>
 
-        <div id="account-connected" hidden>
-            <h2>Vous êtes connecté</h2>
+                <div
+                    id="account-message"
+                    class="alert alert-info d-none"
+                    role="status"
+                    aria-live="polite"
+                ></div>
 
-            <p>
-                Adresse email :
-                <span id="account-user-email"></span>
-            </p>
+                <div id="account-loading" class="text-center py-5">
+                    <div class="spinner-border text-danger" role="status">
+                        <span class="visually-hidden">Chargement…</span>
+                    </div>
 
-            <div class="account-actions">
-                <a
-                    href="{{ path('app_scenarios') }}"
-                    class="button button-primary"
-                >
-                    Voir les scénarios
-                </a>
+                    <p class="mt-3 mb-0 text-muted">
+                        Chargement du compte…
+                    </p>
+                </div>
 
-                <button
-                    id="account-logout"
-                    type="button"
-                    class="button button-secondary"
-                >
-                    Se déconnecter
-                </button>
+                <div id="account-auth" hidden>
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4 p-md-5">
+                            <div class="text-center mb-4">
+                                <i class="bi bi-shield-lock fs-1 text-danger"></i>
+
+                                <h2 class="h4 fw-bold mt-3 mb-1">
+                                    Connexion
+                                </h2>
+
+                                <p class="text-muted mb-0">
+                                    Connectez-vous ou créez votre compte
+                                    pour les prochaines simulations.
+                                </p>
+                            </div>
+
+                            <form id="account-form" class="needs-validation" novalidate>
+                                <div class="mb-3">
+                                    <label
+                                        for="account-email"
+                                        class="form-label fw-semibold"
+                                    >
+                                        Adresse email
+                                    </label>
+
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-envelope"></i>
+                                        </span>
+
+                                        <input
+                                            id="account-email"
+                                            type="email"
+                                            class="form-control"
+                                            autocomplete="email"
+                                            maxlength="254"
+                                            required
+                                        >
+                                    </div>
+
+                                    <div class="invalid-feedback">
+                                        Veuillez saisir une adresse email valide.
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label
+                                        for="account-password"
+                                        class="form-label fw-semibold"
+                                    >
+                                        Mot de passe
+                                    </label>
+
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-key"></i>
+                                        </span>
+
+                                        <input
+                                            id="account-password"
+                                            type="password"
+                                            class="form-control"
+                                            autocomplete="current-password"
+                                            minlength="8"
+                                            required
+                                        >
+                                    </div>
+
+                                    <div class="invalid-feedback">
+                                        Le mot de passe doit contenir au moins 8 caractères.
+                                    </div>
+
+                                    <div class="form-text">
+                                        Pour l’inscription, utilisez au moins 8 caractères
+                                        et un mot de passe unique.
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="submit" class="btn btn-danger px-4">
+                                        <i class="bi bi-box-arrow-in-right me-1"></i>
+                                        Se connecter
+                                    </button>
+
+                                    <button
+                                        id="account-register"
+                                        type="button"
+                                        class="btn btn-outline-primary px-4"
+                                    >
+                                        <i class="bi bi-person-plus me-1"></i>
+                                        Créer un compte
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="account-connected" hidden>
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4 p-md-5">
+                            <div class="d-flex align-items-center gap-3 mb-4">
+                                <i class="bi bi-person-check fs-1 text-success"></i>
+
+                                <div>
+                                    <h2 class="h4 fw-bold mb-1">
+                                        Vous êtes connecté
+                                    </h2>
+
+                                    <p class="text-muted mb-0">
+                                        Adresse email :
+                                        <span
+                                            id="account-user-email"
+                                            class="fw-semibold text-dark"
+                                        ></span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex">
+                                <a
+                                    href="{{ path('app_scenarios') }}"
+                                    class="btn btn-danger px-4"
+                                >
+                                    <i class="bi bi-list-task me-1"></i>
+                                    Voir les scénarios
+                                </a>
+
+                                <button
+                                    id="account-logout"
+                                    type="button"
+                                    class="btn btn-outline-primary px-4"
+                                >
+                                    <i class="bi bi-box-arrow-right me-1"></i>
+                                    Se déconnecter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>

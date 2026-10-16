@@ -1,0 +1,55 @@
+FROM dunglas/frankenphp:1-php8.3
+
+# Configuration PHP de production et extensions.
+RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
+    && install-php-extensions \
+        intl \
+        mbstring \
+        zip \
+        opcache \
+        curl \
+        pdo_mysql \
+        pdo_pgsql \
+        pdo_sqlite
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /app
+
+ENV APP_ENV=prod \
+    APP_DEBUG=0 \
+    PORT=80 \
+    COMPOSER_ALLOW_SUPERUSER=1
+
+COPY . /app
+
+# Les scripts automatiques sont désactivés :
+# les opérations nécessaires sont exécutées explicitement ensuite.
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --no-progress \
+    --prefer-dist \
+    --no-scripts \
+    --optimize-autoloader
+
+RUN mkdir -p /app/var/cache /app/var/log
+
+# Préparation des assets Symfony et AssetMapper.
+RUN php bin/console assets:install public --env=prod --no-debug \
+    && php bin/console importmap:install --env=prod --no-debug \
+    && php bin/console asset-map:compile --env=prod --no-debug
+
+RUN printf '%s\n' \
+    'max_execution_time=180' \
+    'display_errors=Off' \
+    'log_errors=On' \
+    'error_log=/dev/stderr' \
+    > /usr/local/etc/php/conf.d/app.ini
+
+COPY Caddyfile /etc/frankenphp/Caddyfile
+
+EXPOSE 80
+
+# Le cache est préparé au démarrage avec les variables de Vercel.
+CMD ["sh", "-c", "php bin/console cache:clear --env=prod --no-debug && exec frankenphp run --config /etc/frankenphp/Caddyfile"]

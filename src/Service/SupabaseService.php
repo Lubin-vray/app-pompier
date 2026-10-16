@@ -38,7 +38,7 @@ final class SupabaseService
                 'headers' => $headers,
 
                 'query' => [
-                    'select' => 'id,title,brief,difficulty',
+                    'select' => 'id,title,brief,difficulty,definition',
                     'published' => 'eq.true',
                     'order' => 'created_at.desc',
                 ],
